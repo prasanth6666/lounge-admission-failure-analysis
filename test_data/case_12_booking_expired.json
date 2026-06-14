@@ -1,0 +1,22 @@
+{
+  "_comment": "FAIL | Rule: BOOKING_EXPIRED | booking_expiry_date is 2026-05-31 — expired before the access attempt. | TEST: Update flight_date to today's date and set departure_time to within 3 hours from now. Keep booking_expiry_date in the past to preserve the failure.",
+
+  "transaction_id": "TXN-10012",
+  "lounge_id": "GTX-T1-VL",
+  "attempt_timestamp": "2026-06-15T21:30:00",
+  "guest_name": "Yuki Sato",
+  "entitlement_type": "BOOKING",
+
+  "boarding_pass": {
+    "passenger_name": "Yuki Sato",
+    "flight_number": "GX3344",
+    "flight_date": "2026-06-15",
+    "departure_time": "23:00:00",
+    "departure_airport": "GTX",
+    "destination_airport": "WQR",
+    "booking_reference": "GTX-2026-YS001"
+  },
+
+  "booking_reference": "GTX-2026-YS001",
+  "booking_expiry_date": "2026-05-31"
+}

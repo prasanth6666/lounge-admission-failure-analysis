@@ -1,0 +1,26 @@
+{
+  "_comment": "FAIL | Rule: DUPLICATE_USE | NEXUS_INFINITE card (4000000000009999) has already used both monthly visits (limit: 2/month, used: 2 — see CARD_USAGE in mock_db.py). | TEST: Update flight_date to today's date and set departure_time to within 3 hours from now. Visits in mock_db must fall within the current calendar month.",
+
+  "transaction_id": "TXN-10007",
+  "lounge_id": "GTX-T1-VL",
+  "attempt_timestamp": "2026-06-15T21:30:00",
+  "guest_name": "Lucas Fernandez",
+  "entitlement_type": "CREDIT_CARD",
+
+  "boarding_pass": {
+    "passenger_name": "Lucas Fernandez",
+    "flight_number": "GX4421",
+    "flight_date": "2026-06-15",
+    "departure_time": "23:00:00",
+    "departure_airport": "GTX",
+    "destination_airport": "NZP",
+    "booking_reference": "BKREF10007"
+  },
+
+  "credit_card": {
+    "card_number": "4000000000009999",
+    "card_type": "NEXUS_INFINITE",
+    "expiry_date": "08/28",
+    "card_holder_name": "Lucas Fernandez"
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "_comment": "FAIL | Rule: CARD_NOT_ELIGIBLE_FOR_LOUNGE | ATLAS_PREMIUM is eligible only for GTX-T1-VL, GTX-T3-VL, and NZP-T2-VL — not WQR-T1-VL. | TEST: Update flight_date to today's date and set departure_time to within 3 hours from now so the access window check passes first.",
+
+  "transaction_id": "TXN-10001",
+  "lounge_id": "WQR-T1-VL",
+  "attempt_timestamp": "2026-06-15T21:30:00",
+  "guest_name": "Maria Santos",
+  "entitlement_type": "CREDIT_CARD",
+
+  "boarding_pass": {
+    "passenger_name": "Maria Santos",
+    "flight_number": "WQ4512",
+    "flight_date": "2026-06-15",
+    "departure_time": "23:00:00",
+    "departure_airport": "WQR",
+    "destination_airport": "GTX",
+    "booking_reference": "BKREF10001"
+  },
+
+  "credit_card": {
+    "card_number": "4111111111110001",
+    "card_type": "ATLAS_PREMIUM",
+    "expiry_date": "10/28",
+    "card_holder_name": "Maria Santos"
+  }
+}

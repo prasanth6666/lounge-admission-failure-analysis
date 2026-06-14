@@ -1,0 +1,22 @@
+{
+  "_comment": "FAIL | Rule: BOOKING_REFERENCE_MISMATCH | QR code payload 'QR-SCAN-7700-XMD' does not match boarding pass reference 'NZP-2026-AD8800'. | TEST: Update flight_date to today's date and set departure_time to within 3 hours from now so the access window check passes first.",
+
+  "transaction_id": "TXN-10011",
+  "lounge_id": "NZP-T2-VL",
+  "attempt_timestamp": "2026-06-15T21:30:00",
+  "guest_name": "Amara Diallo",
+  "entitlement_type": "BOOKING",
+
+  "boarding_pass": {
+    "passenger_name": "Amara Diallo",
+    "flight_number": "NZ5512",
+    "flight_date": "2026-06-15",
+    "departure_time": "23:00:00",
+    "departure_airport": "NZP",
+    "destination_airport": "WQR",
+    "booking_reference": "NZP-2026-AD8800"
+  },
+
+  "qr_code_payload": "QR-SCAN-7700-XMD",
+  "booking_expiry_date": "2026-12-31"
+}

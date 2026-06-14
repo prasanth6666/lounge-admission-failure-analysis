@@ -1,0 +1,26 @@
+{
+  "_comment": "FAIL | Rule: INVALID_BOARDING_PASS | flight_number is an empty string — fails the first boarding pass validity check. No other rules run. | TEST: No date/time changes needed. This rule fires before the access window check.",
+
+  "transaction_id": "TXN-10009",
+  "lounge_id": "NZP-T2-VL",
+  "attempt_timestamp": "2026-06-15T21:30:00",
+  "guest_name": "Hiroshi Tanaka",
+  "entitlement_type": "CREDIT_CARD",
+
+  "boarding_pass": {
+    "passenger_name": "Hiroshi Tanaka",
+    "flight_number": "",
+    "flight_date": "2026-06-15",
+    "departure_time": "23:00:00",
+    "departure_airport": "NZP",
+    "destination_airport": "GTX",
+    "booking_reference": "BKREF10009"
+  },
+
+  "credit_card": {
+    "card_number": "4111111111110009",
+    "card_type": "NEXUS_INFINITE",
+    "expiry_date": "06/28",
+    "card_holder_name": "Hiroshi Tanaka"
+  }
+}

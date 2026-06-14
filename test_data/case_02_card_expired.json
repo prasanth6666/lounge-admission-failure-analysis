@@ -1,0 +1,26 @@
+{
+  "_comment": "FAIL | Rule: CARD_EXPIRED | Card expiry is 03/24 — expired more than two years before this access attempt. | TEST: Update flight_date to today's date and set departure_time to within 3 hours from now so the access window check passes first.",
+
+  "transaction_id": "TXN-10002",
+  "lounge_id": "GTX-T1-VL",
+  "attempt_timestamp": "2026-06-15T21:30:00",
+  "guest_name": "James Patel",
+  "entitlement_type": "CREDIT_CARD",
+
+  "boarding_pass": {
+    "passenger_name": "James Patel",
+    "flight_number": "GX1102",
+    "flight_date": "2026-06-15",
+    "departure_time": "23:00:00",
+    "departure_airport": "GTX",
+    "destination_airport": "PRV",
+    "booking_reference": "BKREF10002"
+  },
+
+  "credit_card": {
+    "card_number": "4111111111110002",
+    "card_type": "NEXUS_INFINITE",
+    "expiry_date": "03/24",
+    "card_holder_name": "James Patel"
+  }
+}
