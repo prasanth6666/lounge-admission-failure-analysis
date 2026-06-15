@@ -23,3 +23,5 @@ Raw guest data is never sent to the LLM. The LLM receives only rule findings and
 Fields that are not provided remain `null` in `masked_guest_data`.
 
 `card_type` is not masked because it is a product category and does not identify an individual.
+
+`transaction_id` is not masked because it is a system-generated identifier used for tracing and auditing and does not contain guest-sensitive information.

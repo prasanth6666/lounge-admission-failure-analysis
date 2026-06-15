@@ -275,6 +275,14 @@ The manual review flag is derived directly from rule results by the engine, not 
 
 Raw guest data flows through the rule engine untouched. Masking runs as a separate step after all rules complete and shares no state with the rule pipeline. This ensures masking can never affect a rule result.
 
+### Short-circuit naturally limits LLM prompt size
+
+Because the rule engine short-circuits on the first `failed` result, a deterministic failure always produces exactly one finding. The LLM prompt for the common case is therefore always minimal. Token use only scales up for inconclusive transactions, where every unresolved finding is needed for a complete manual review.
+
+### LLM output is constrained to JSON only
+
+The prompt instructs Gemini to respond in JSON only, with a fixed schema (`staff_guidance` and `guest_explanation`). This eliminates filler text, makes the response size predictable, and allows direct `json.loads` parsing without any natural-language post-processing. If either required field is absent, the response is rejected and the fallback fires.
+
 ---
 
 ## How LLM Integration Works
