@@ -49,16 +49,18 @@ Respond in JSON only:
 # ---------------------------------------------------------------------------
 
 _GUEST_MESSAGES = {
-    "INVALID_BOARDING_PASS":        "There appears to be an issue with your boarding pass details.",
-    "ACCESS_WINDOW_VIOLATION":      "Your access attempt is outside the permitted window. Lounge access is only allowed within 3 hours before departure.",
-    "CARD_NOT_ELIGIBLE_FOR_LOUNGE": "The card you have presented is not eligible for complimentary lounge access.",
-    "CARD_EXPIRED":                 "The card you have presented appears to have expired.",
-    "BOOKING_REFERENCE_MISMATCH":   "The booking reference you provided does not match the one on your boarding pass.",
-    "BOOKING_EXPIRED":              "Your booking has expired and is no longer valid for lounge access.",
-    "DUPLICATE_USE":                "It appears this access entitlement has already been used.",
-    "AIRLINE_STATUS_INVALID":       "We were unable to verify your airline status.",
-    "CARD_HOLDER_NAME_MISMATCH":    "The name on your card does not match the name on your boarding pass.",
-    "GUEST_NAME_MISMATCH":                   "The name provided does not match the name on your boarding pass.",
+    "INVALID_BOARDING_PASS":          "There appears to be an issue with your boarding pass details.",
+    "ACCESS_WINDOW_VIOLATION":        "Your access attempt is outside the permitted window. Lounge access is only allowed within 3 hours before departure.",
+    "CARD_NOT_ELIGIBLE_FOR_LOUNGE":   "The card you have presented is not eligible for complimentary lounge access at this location.",
+    "CARD_EXPIRY_FORMAT_INVALID":     "We were unable to validate the expiry date on your card. Please verify your card details or present an alternative eligible card.",
+    "CARD_EXPIRED":                   "The card you have presented has expired and is no longer valid for lounge access.",
+    "CARD_HOLDER_NAME_MISMATCH":      "The name on your card does not match the name on your boarding pass.",
+    "CARD_VISIT_LIMIT_EXCEEDED":      "You have reached the complimentary lounge visit limit for your card for this period.",
+    "BOOKING_REFERENCE_MISMATCH":     "The booking reference you provided could not be found in our system.",
+    "BOOKING_EXPIRED":                "Your booking has expired and is no longer valid for lounge access.",
+    "BOOKING_REFERENCE_ALREADY_USED": "This booking reference has already been used for lounge access today.",
+    "AIRLINE_STATUS_INVALID":         "We were unable to verify your airline membership status.",
+    "GUEST_NAME_MISMATCH":            "The name provided does not match the name on your boarding pass.",
 }
 
 
