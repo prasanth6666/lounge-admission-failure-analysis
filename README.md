@@ -54,6 +54,17 @@ pytest tests/ -v
 - Lounge access can be obtained through one of three entitlement types: Credit Card, Lounge Booking, or Airline Membership Status.
 - The request payload always includes all optional entitlement fields (`credit_card`, `booking_reference`, `qr_code_payload`, `airline_status_id`). Fields not applicable to the submitted entitlement type are set to `null` at the top level. Sending a partial `credit_card` object with null inner fields is not supported — the `CreditCard` model requires all four fields to be non-null strings when the object is provided.
 
+**Request Validation**
+
+The following errors are caught by Pydantic before any rule runs and return a `422 Unprocessable Entity`:
+
+- `entitlement_type` must be one of `CREDIT_CARD`, `BOOKING`, or `AIRLINE_STATUS`. Any other value is rejected.
+- If `entitlement_type` is `CREDIT_CARD`, the `credit_card` object must be present with all four fields (`card_number`, `card_type`, `expiry_date`, `card_holder_name`) as non-null strings.
+- If `entitlement_type` is `BOOKING`, at least one of `booking_reference` or `qr_code_payload` must be provided. Both being `null` is rejected.
+- If `entitlement_type` is `AIRLINE_STATUS`, `airline_status_id` must be present.
+
+If all three entitlement fields are populated but only one `entitlement_type` is declared, the extra fields are accepted but ignored — the rule engine only evaluates rules for the declared type.
+
 **Credit Card**
 
 - Not all card types provide lounge access — only specific card types are eligible.
@@ -153,7 +164,12 @@ Name matching rules use a similarity threshold of 0.90 after normalisation (case
 
 ---
 
+
+
+
 ## How Test Data Was Generated
+
+See [docs/test_suite.md](docs/test_suite.md) for the full list of all 50 automated tests, what each one covers, and how the integration tests work.
 
 ### Mock Datasets
 
@@ -241,47 +257,10 @@ The `test_data/` directory contains 14 hand-crafted JSON payloads for live API t
 
 ---
 
+
 ## Design Decisions
 
-### Findings are always returned as a list
-
-`deterministic_findings` in the API response is always a list, even when there is only one failure. A deterministic failure produces exactly one entry; an inconclusive result can produce many. Keeping the shape consistent means the API consumer never needs to branch on whether the field is an object or an array.
-
-### Short-circuit on `failed`, collect on `inconclusive`
-
-The rule engine stops immediately on the first `failed` result — one deterministic cause is sufficient and running further rules would be misleading. When a rule returns `inconclusive`, however, the engine continues and collects every unresolved finding before returning. Manual review requires all available signals, not just the first.
-
-### Two levels of failure granularity: `rule_id` and `failure_categories`
-
-Each finding carries a specific `rule_id` (e.g. `CARD_EXPIRY_FORMAT_INVALID`) and is also mapped to a broader `failure_category` (e.g. `ENTITLEMENT_NOT_VALID`). Multiple rule IDs can map to the same category. Callers that only need to route or display at a high level use categories; callers that need to act on a specific failure use `rule_id`.
-
-### `UNCERTAIN` is a synthetic finding, not a special case
-
-When all rules pass on a denied transaction, the engine injects a synthetic `UNKNOWN_FAILURE_REASON` finding rather than returning an empty list. This preserves the invariant that `deterministic_findings` is never empty and ensures the LLM always receives a finding to work from — no special-casing is needed anywhere downstream.
-
-### The LLM is a language layer only
-
-The LLM never determines the failure reason — the rule engine does that deterministically. Gemini only converts the structured findings produced by the engine into human-readable staff guidance and guest explanation. All analytical logic is testable and auditable independently of LLM availability.
-
-### `requires_manual_review` is deterministic
-
-The manual review flag is derived directly from rule results by the engine, not inferred by the LLM. It is identical whether the LLM responds successfully or the fallback fires.
-
-### Card numbers are hashed before storage
-
-`CARD_USAGE` stores SHA-256 hashes of card numbers (salted via `CARD_HASH_SALT`), not raw PANs. Visit limits can be enforced without the usage log ever holding a sensitive card number.
-
-### Masking is independent of rule evaluation
-
-Raw guest data flows through the rule engine untouched. Masking runs as a separate step after all rules complete and shares no state with the rule pipeline. This ensures masking can never affect a rule result.
-
-### Short-circuit naturally limits LLM prompt size
-
-Because the rule engine short-circuits on the first `failed` result, a deterministic failure always produces exactly one finding. The LLM prompt for the common case is therefore always minimal. Token use only scales up for inconclusive transactions, where every unresolved finding is needed for a complete manual review.
-
-### LLM output is constrained to JSON only
-
-The prompt instructs Gemini to respond in JSON only, with a fixed schema (`staff_guidance` and `guest_explanation`). This eliminates filler text, makes the response size predictable, and allows direct `json.loads` parsing without any natural-language post-processing. If either required field is absent, the response is rejected and the fallback fires.
+See [docs/design_decisions.md](docs/design_decisions.md) for a detailed explanation of the key architectural choices made in this service.
 
 ---
 
@@ -303,6 +282,8 @@ When no rule can identify a cause (the `UNCERTAIN` case), a synthetic inconclusi
 If Gemini wraps the JSON in markdown code fences, the service strips them before parsing. If the parsed response is missing either required field, the call is treated as a failure and the fallback is used.
 
 ---
+
+
 
 ## How Fallback Works When the LLM Is Unavailable
 
