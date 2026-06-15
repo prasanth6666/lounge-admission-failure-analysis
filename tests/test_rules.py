@@ -406,6 +406,58 @@ class TestAirlineStatus:
 
 
 # ---------------------------------------------------------------------------
+# Boundary: Access Window
+# ---------------------------------------------------------------------------
+
+class TestAccessWindowBoundary:
+
+    def test_exactly_at_window_opening_passes(self):
+        # Departure exactly 3 hours away — window has just opened, should pass
+        r = check_access_window(_booking(boarding_pass=_bp(hours=3)))
+        assert r["result"] == "passed"
+
+
+# ---------------------------------------------------------------------------
+# Boundary: Card Expiry
+# ---------------------------------------------------------------------------
+
+class TestCardExpiryBoundary:
+
+    def test_expiry_in_current_month_passes(self):
+        from datetime import date
+        today = date.today()
+        expiry = f"{today.month:02d}/{str(today.year)[2:]}"
+        txn = _card(credit_card=CreditCard(
+            card_number      = "4111111111111111",
+            card_type        = "SKYCARD_ELITE",
+            expiry_date      = expiry,
+            card_holder_name = "Alice Johnson",
+        ))
+        assert check_card_expiry(txn)["result"] == "passed"
+
+
+# ---------------------------------------------------------------------------
+# Boundary: Name Similarity Threshold
+# ---------------------------------------------------------------------------
+
+class TestNameSimilarityBoundary:
+
+    def test_name_exactly_at_threshold_is_inconclusive(self):
+        # "JOHN SMITH" vs "JOHN SMYTH": SequenceMatcher ratio = 0.90 exactly
+        # Threshold is inclusive (>= 0.90) so this must return inconclusive, not failed
+        txn = _booking(guest_name="John Smith", boarding_pass=_bp(passenger_name="John Smyth"))
+        r = check_guest_name_against_boarding_pass(txn)
+        assert r["result"] == "inconclusive"
+
+    def test_name_just_below_threshold_fails(self):
+        # "ALICIA JOHNSON" vs "ALICE JOHNSON": SequenceMatcher ratio ≈ 0.889
+        # Below threshold — should be a definitive failed, not inconclusive
+        txn = _booking(boarding_pass=_bp(passenger_name="Alicia Johnson"))
+        r = check_guest_name_against_boarding_pass(txn)
+        assert r["result"] == "failed"
+
+
+# ---------------------------------------------------------------------------
 # Integration: analyse_transaction (full service, LLM fallback forced)
 # ---------------------------------------------------------------------------
 

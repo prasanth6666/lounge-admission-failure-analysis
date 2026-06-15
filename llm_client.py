@@ -6,24 +6,21 @@ import json
 # Prompt builder
 # ---------------------------------------------------------------------------
 
-def _build_prompt(transaction_id: str, failure_categories: list, failed_findings: list, inconclusive_findings: list) -> str:
+def _build_prompt(failed_findings: list, inconclusive_findings: list) -> str:
     failed_text = "\n".join(
-        f"  - [{f['rule_id']}] {f['details']}" for f in failed_findings
+        f"  - {f['details']}" for f in failed_findings
     )
     inconclusive_text = "\n".join(
-        f"  - [{f['rule_id']}] {f['details']}" for f in inconclusive_findings
+        f"  - {f['details']}" for f in inconclusive_findings
     )
 
     return f"""
 You are an airport lounge operations assistant helping staff handle a failed admission.
 
-Transaction ID    : {transaction_id}
-Failure Categories: {', '.join(failure_categories)}
-
-Failed Rules:
+Failed checks:
 {failed_text if failed_text else "  None"}
 
-Inconclusive Rules (could not be fully verified):
+Inconclusive checks (could not be fully verified):
 {inconclusive_text if inconclusive_text else "  None"}
 
 Your task:
@@ -36,6 +33,7 @@ Rules:
 - Staff guidance should be direct and operational.
 - Guest explanation should be polite, concise, and professional.
 - Do NOT make the admission decision — only explain and guide.
+- Do NOT mention technical rule names, category codes, or system identifiers in either response.
 - If any item is inconclusive, advise staff to verify manually with a photo ID or physical document.
 
 Respond in JSON only:
@@ -109,8 +107,6 @@ def _build_fallback(failed_findings: list, inconclusive_findings: list) -> dict:
 # ---------------------------------------------------------------------------
 
 def get_llm_response(
-    transaction_id: str,
-    failure_categories: list,
     failed_findings: list,
     inconclusive_findings: list,
 ) -> tuple[dict, bool]:
@@ -129,7 +125,7 @@ def get_llm_response(
 
         genai.configure(api_key=api_key)
         model  = genai.GenerativeModel("gemini-2.5-flash")
-        prompt = _build_prompt(transaction_id, failure_categories, failed_findings, inconclusive_findings)
+        prompt = _build_prompt(failed_findings, inconclusive_findings)
 
         response      = model.generate_content(prompt)
         response_text = response.text.strip()

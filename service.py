@@ -30,8 +30,6 @@ def analyse_transaction(transaction: AdmissionTransaction) -> dict:
 
     # Step 4: Get staff guidance and guest explanation from LLM (or fallback)
     llm_result, fallback_used = get_llm_response(
-        transaction_id        = transaction.transaction_id,
-        failure_categories    = failure_categories,
         failed_findings       = failed_findings,
         inconclusive_findings = inconclusive_findings,
     )

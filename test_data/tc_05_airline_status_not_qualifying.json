@@ -1,0 +1,21 @@
+{
+  "_note": "Time-sensitive: departure is at 14:00, so the access window opens at 11:00. This test case is only valid when run between 11:00 and 14:00 on the flight date. Outside this window, ACCESS_WINDOW_VIOLATION fires instead of the intended rule.",
+  "transaction_id": "TXN-TC-005",
+  "lounge_id": "GTX-T1-VL",
+  "attempt_timestamp": "2026-06-15T11:50:00",
+  "guest_name": "Alice Johnson",
+  "boarding_pass": {
+    "passenger_name": "Alice Johnson",
+    "flight_number": "EK202",
+    "flight_date": "2026-06-15",
+    "departure_time": "14:00:00",
+    "departure_airport": "DXB",
+    "destination_airport": "LHR",
+    "flight_pnr": "PNR-EK202-001"
+  },
+  "entitlement_type": "AIRLINE_STATUS",
+  "credit_card": null,
+  "booking_reference": null,
+  "qr_code_payload": null,
+  "airline_status_id": "FF-000000000"
+}
