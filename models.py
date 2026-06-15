@@ -10,7 +10,7 @@ class BoardingPass(BaseModel):
     departure_time: time
     departure_airport: str
     destination_airport: str
-    booking_reference: str
+    flight_pnr: str
 
 
 class CreditCard(BaseModel):
@@ -28,7 +28,6 @@ class AdmissionTransaction(BaseModel):
     boarding_pass: BoardingPass
     credit_card: Optional[CreditCard] = None
     booking_reference: Optional[str] = None
-    booking_expiry_date: Optional[date] = None
     qr_code_payload: Optional[str] = None
     airline_status_id: Optional[str] = None
     entitlement_type: str
@@ -53,10 +52,6 @@ class AdmissionTransaction(BaseModel):
             if not self.booking_reference and not self.qr_code_payload:
                 raise ValueError(
                     "booking_reference or qr_code_payload is required when entitlement_type is BOOKING"
-                )
-            if self.booking_expiry_date is None:
-                raise ValueError(
-                    "booking_expiry_date is required when entitlement_type is BOOKING"
                 )
         if self.entitlement_type == "AIRLINE_STATUS" and self.airline_status_id is None:
             raise ValueError(

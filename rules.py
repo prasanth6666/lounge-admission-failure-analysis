@@ -12,7 +12,7 @@ from config import (
     NAME_SIMILARITY_THRESHOLD,
     VALID_AIRLINE_STATUSES,
 )
-from mock_db import CARD_USAGE, USED_REFERENCES
+from mock_db import CARD_USAGE, USED_REFERENCES, VALID_BOOKINGS, VALID_AIRLINE_MEMBERSHIPS
 
 
 # ---------------------------------------------------------------------------
@@ -61,14 +61,12 @@ def check_boarding_pass_validity(transaction) -> dict:
             return _bp_failed("Boarding pass passenger name is missing.")
         if not bp.flight_number.strip():
             return _bp_failed("Boarding pass flight number is missing.")
-        if not bp.flight_date:
-            return _bp_failed("Boarding pass flight date is missing.")
         if not bp.departure_airport.strip():
             return _bp_failed("Boarding pass departure airport is missing.")
         if not bp.destination_airport.strip():
             return _bp_failed("Boarding pass destination airport is missing.")
-        if not bp.booking_reference.strip():
-            return _bp_failed("Boarding pass booking reference is missing.")
+        if not bp.flight_pnr.strip():
+            return _bp_failed("Boarding pass flight PNR is missing.")
 
         return {"rule_id": "INVALID_BOARDING_PASS", "result": "passed", "details": "Boarding pass is valid."}
     except Exception:
@@ -179,25 +177,24 @@ def check_card_expiry(transaction) -> dict:
         }
 
 
-
 def check_booking_reference_match(transaction) -> dict:
     try:
         submitted_ref = transaction.booking_reference or transaction.qr_code_payload
         submitted     = submitted_ref.strip().upper()
-        bp_ref    = transaction.boarding_pass.booking_reference.strip().upper()
+        booking       = VALID_BOOKINGS.get(submitted)
 
-        if submitted == bp_ref:
+        if booking is None:
+            source = "QR code payload" if transaction.qr_code_payload and not transaction.booking_reference else "Submitted booking reference"
             return {
                 "rule_id": "BOOKING_REFERENCE_MISMATCH",
-                "result":  "passed",
-                "details": "Submitted booking reference matches boarding pass.",
+                "result":  "failed",
+                "details": f"{source} does not match any booking in the system.",
             }
 
-        source = "QR code payload" if transaction.qr_code_payload and not transaction.booking_reference else "Submitted booking reference"
         return {
             "rule_id": "BOOKING_REFERENCE_MISMATCH",
-            "result":  "failed",
-            "details": f"{source} does not match the booking reference on the boarding pass.",
+            "result":  "passed",
+            "details": "Booking reference found in the system.",
         }
     except Exception:
         return {
@@ -209,9 +206,11 @@ def check_booking_reference_match(transaction) -> dict:
 
 def check_booking_expiry(transaction) -> dict:
     try:
-        expiry = transaction.booking_expiry_date
-        today  = date.today()
-        passed = expiry >= today
+        submitted_ref = transaction.booking_reference or transaction.qr_code_payload
+        submitted     = submitted_ref.strip().upper()
+        booking       = VALID_BOOKINGS[submitted]
+        expiry        = date.fromisoformat(booking["expiry_date"])
+        passed        = expiry >= date.today()
 
         return {
             "rule_id": "BOOKING_EXPIRED",
@@ -230,66 +229,84 @@ def check_booking_expiry(transaction) -> dict:
         }
 
 
-def check_duplicate_use(transaction) -> dict:
+def check_booking_reference_duplicate(transaction) -> dict:
     try:
-        today_str = str(date.today())
-
-        # Check booking reference used today
         ref = transaction.booking_reference or transaction.qr_code_payload
         if ref and ref.strip().upper() in USED_REFERENCES:
-            if USED_REFERENCES[ref.strip().upper()] == today_str:
+            if USED_REFERENCES[ref.strip().upper()] == str(date.today()):
                 return {
-                    "rule_id": "DUPLICATE_USE",
+                    "rule_id": "BOOKING_REFERENCE_ALREADY_USED",
                     "result":  "failed",
                     "details": "This booking reference has already been used for lounge access today. Each booking reference is valid for a single entry only.",
                 }
 
-        # Check card visit limit for the current period
-        if transaction.credit_card:
-            card_type    = transaction.credit_card.card_type.upper().replace(" ", "_")
-            card_hash    = _hash_card(transaction.credit_card.card_number)
-            visit_config = CARD_VISIT_LIMITS.get(card_type)
-
-            if visit_config and card_hash in CARD_USAGE:
-                period       = visit_config["period"]
-                limit        = visit_config["limit"]
-                period_start = _get_period_start(period)
-
-                visits_in_period = [
-                    d for d in CARD_USAGE[card_hash]
-                    if date.fromisoformat(d) >= period_start
-                ]
-
-                if len(visits_in_period) >= limit:
-                    return {
-                        "rule_id": "DUPLICATE_USE",
-                        "result":  "failed",
-                        "details": (
-                            f"This card type ({card_type}) allows {limit} lounge visit(s) "
-                            f"per {period} period. This card has already been used "
-                            f"{len(visits_in_period)} time(s) since {period_start}. "
-                            "Complimentary access limit has been reached"
-                        ),
-                    }
-
         return {
-            "rule_id": "DUPLICATE_USE",
+            "rule_id": "BOOKING_REFERENCE_ALREADY_USED",
             "result":  "passed",
-            "details": "No duplicate use or visit limit exceeded detected",
+            "details": "Booking reference has not been used today.",
         }
     except Exception:
         return {
-            "rule_id": "DUPLICATE_USE",
+            "rule_id": "BOOKING_REFERENCE_ALREADY_USED",
             "result":  "inconclusive",
-            "details": "Duplicate use check could not be completed.",
+            "details": "Booking reference duplicate check could not be completed.",
+        }
+
+
+def check_card_visit_limit(transaction) -> dict:
+    try:
+        card_type    = transaction.credit_card.card_type.upper().replace(" ", "_")
+        card_hash    = _hash_card(transaction.credit_card.card_number)
+        visit_config = CARD_VISIT_LIMITS.get(card_type)
+
+        if visit_config and card_hash in CARD_USAGE:
+            period       = visit_config["period"]
+            limit        = visit_config["limit"]
+            period_start = _get_period_start(period)
+
+            visits_in_period = [
+                d for d in CARD_USAGE[card_hash]
+                if date.fromisoformat(d) >= period_start
+            ]
+
+            if len(visits_in_period) >= limit:
+                return {
+                    "rule_id": "CARD_VISIT_LIMIT_EXCEEDED",
+                    "result":  "failed",
+                    "details": (
+                        f"This card type ({card_type}) allows {limit} lounge visit(s) "
+                        f"per {period} period. This card has already been used "
+                        f"{len(visits_in_period)} time(s) since {period_start}. "
+                        "Complimentary access limit has been reached."
+                    ),
+                }
+
+        return {
+            "rule_id": "CARD_VISIT_LIMIT_EXCEEDED",
+            "result":  "passed",
+            "details": "Card visit limit has not been reached for the current period.",
+        }
+    except Exception:
+        return {
+            "rule_id": "CARD_VISIT_LIMIT_EXCEEDED",
+            "result":  "inconclusive",
+            "details": "Card visit limit check could not be completed.",
         }
 
 
 def check_airline_status_eligibility(transaction) -> dict:
     try:
-        status_id = transaction.airline_status_id.strip().upper()
-        passed    = status_id in VALID_AIRLINE_STATUSES
+        membership_id = transaction.airline_status_id.strip().upper()
+        tier          = VALID_AIRLINE_MEMBERSHIPS.get(membership_id)
 
+        if tier is None:
+            return {
+                "rule_id": "AIRLINE_STATUS_INVALID",
+                "result":  "failed",
+                "details": "Airline membership ID not recognised in the system.",
+            }
+
+        passed = tier in VALID_AIRLINE_STATUSES
         return {
             "rule_id": "AIRLINE_STATUS_INVALID",
             "result":  "passed" if passed else "failed",
@@ -371,5 +388,3 @@ def check_guest_name_against_boarding_pass(transaction) -> dict:
             "result":  "inconclusive",
             "details": "Name check could not be completed.",
         }
-
-

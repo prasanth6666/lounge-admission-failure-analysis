@@ -83,13 +83,13 @@ def _build_fallback(failed_findings: list, inconclusive_findings: list) -> dict:
     ).strip()
 
     if failed_findings:
-        guest_messages = [
-            _GUEST_MESSAGES.get(f["rule_id"], "There is an issue with your submitted documents.")
-            for f in failed_findings
-        ]
+        guest_message = _GUEST_MESSAGES.get(
+            failed_findings[0]["rule_id"],
+            "There is an issue with your submitted documents."
+        )
         guest_explanation = (
             "We regret that we are unable to process your lounge access at this time. "
-            + " ".join(guest_messages)
+            + guest_message
             + " Our staff will be happy to assist you with the next steps."
         )
     else:

@@ -1,5 +1,4 @@
 import re
-import unicodedata
 
 
 def mask_name(name: str) -> str:
@@ -57,7 +56,7 @@ def mask_qr_payload(payload: str) -> str:
     """Masks QR code payload entirely — too sensitive to show any part."""
     if not payload:
         return ""
-    return "[QR_PAYLOAD_MASKED]"
+    return "****"
 
 
 def mask_airline_status_id(status_id: str) -> str:
@@ -72,30 +71,19 @@ def mask_airline_status_id(status_id: str) -> str:
 
 
 def mask_transaction(transaction) -> dict:
-    """Returns a dict of all sensitive fields masked for safe inclusion in the response."""
-    masked = {
-        "guest_name": mask_name(transaction.guest_name),
+    """Returns a dict with all sensitive fields masked.
+    All fields are always present — null when not applicable to the entitlement type.
+    """
+    cc = transaction.credit_card
+    return {
+        "guest_name":              mask_name(transaction.guest_name),
+        "card_number":             mask_card_number(cc.card_number) if cc else None,
+        "card_holder":             mask_name(cc.card_holder_name) if cc else None,
+        "card_type":               cc.card_type if cc else None,
+        "card_expiry":             mask_card_expiry(cc.expiry_date) if cc else None,
+        "booking_reference":       mask_booking_reference(transaction.booking_reference) if transaction.booking_reference else None,
+        "qr_code_payload":         mask_qr_payload(transaction.qr_code_payload) if transaction.qr_code_payload else None,
+        "airline_status_id":       mask_airline_status_id(transaction.airline_status_id) if transaction.airline_status_id else None,
+        "boarding_pass_reference": mask_booking_reference(transaction.boarding_pass.flight_pnr),
+        "passenger_name":          mask_name(transaction.boarding_pass.passenger_name),
     }
-
-    if transaction.credit_card:
-        masked["card_last4"]    = transaction.credit_card.card_number[-4:]
-        masked["card_holder"]   = mask_name(transaction.credit_card.card_holder_name)
-        masked["card_type"]     = transaction.credit_card.card_type
-        masked["card_expiry"]   = mask_card_expiry(transaction.credit_card.expiry_date)
-
-    if transaction.booking_reference:
-        masked["booking_reference"] = mask_booking_reference(transaction.booking_reference)
-
-    if transaction.qr_code_payload:
-        masked["qr_code_payload"] = mask_qr_payload(transaction.qr_code_payload)
-
-    if transaction.airline_status_id:
-        masked["airline_status_id"] = mask_airline_status_id(transaction.airline_status_id)
-
-    if transaction.boarding_pass:
-        masked["boarding_pass_reference"] = mask_booking_reference(
-            transaction.boarding_pass.booking_reference
-        )
-        masked["passenger_name"] = mask_name(transaction.boarding_pass.passenger_name)
-
-    return masked

@@ -5,9 +5,10 @@ from rules import (
     check_card_eligibility,
     check_card_expiry,
     check_card_holder_name,
-    check_duplicate_use,
+    check_card_visit_limit,
     check_booking_reference_match,
     check_booking_expiry,
+    check_booking_reference_duplicate,
     check_airline_status_eligibility,
 )
 
@@ -18,8 +19,8 @@ COMMON_RULES = [
 ]
 
 ENTITLEMENT_RULES = {
-    "CREDIT_CARD":    [check_card_eligibility, check_card_expiry, check_card_holder_name, check_duplicate_use],
-    "BOOKING":        [check_booking_reference_match, check_booking_expiry, check_duplicate_use],
+    "CREDIT_CARD":    [check_card_eligibility, check_card_expiry, check_card_holder_name, check_card_visit_limit],
+    "BOOKING":        [check_booking_reference_match, check_booking_expiry, check_booking_reference_duplicate],
     "AIRLINE_STATUS": [check_airline_status_eligibility],
 }
 
@@ -34,7 +35,8 @@ RULE_TO_CATEGORY = {
     "BOOKING_REFERENCE_MISMATCH":   "BOOKING_REFERENCE_MISMATCH",
     "BOOKING_EXPIRED":              "BOOKING_EXPIRED",
 
-    "DUPLICATE_USE":                "DUPLICATE_ACCESS",
+    "BOOKING_REFERENCE_ALREADY_USED": "DUPLICATE_ACCESS",
+    "CARD_VISIT_LIMIT_EXCEEDED":      "DUPLICATE_ACCESS",
 
     "CARD_HOLDER_NAME_MISMATCH":    "CARD_HOLDER_NAME_MISMATCH",
     "GUEST_NAME_MISMATCH":                   "GUEST_NAME_MISMATCH",

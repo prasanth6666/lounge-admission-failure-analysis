@@ -21,12 +21,9 @@ def analyse_transaction(transaction: AdmissionTransaction) -> dict:
     if failed_findings:
         status     = "failed"
         confidence = "high"
-    elif inconclusive_findings:
+    else:
         status     = "inconclusive"
         confidence = "low"
-    else:
-        status     = "passed"
-        confidence = None
 
     # Step 3: Mask sensitive guest data
     masked_guest_data = mask_transaction(transaction)
