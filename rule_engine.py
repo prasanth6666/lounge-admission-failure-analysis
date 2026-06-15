@@ -28,9 +28,10 @@ RULE_TO_CATEGORY = {
     "INVALID_BOARDING_PASS":        "BOARDING_PASS_INVALID",
     "ACCESS_WINDOW_VIOLATION":      "ACCESS_WINDOW_VIOLATION",
 
-    "CARD_NOT_ELIGIBLE_FOR_LOUNGE": "ENTITLEMENT_NOT_VALID",
-    "CARD_EXPIRED":                 "ENTITLEMENT_NOT_VALID",
-    "AIRLINE_STATUS_INVALID":       "ENTITLEMENT_NOT_VALID",
+    "CARD_NOT_ELIGIBLE_FOR_LOUNGE":  "ENTITLEMENT_NOT_VALID",
+    "CARD_EXPIRY_FORMAT_INVALID":    "ENTITLEMENT_NOT_VALID",
+    "CARD_EXPIRED":                  "ENTITLEMENT_NOT_VALID",
+    "AIRLINE_STATUS_INVALID":        "ENTITLEMENT_NOT_VALID",
 
     "BOOKING_REFERENCE_MISMATCH":   "BOOKING_REFERENCE_MISMATCH",
     "BOOKING_EXPIRED":              "BOOKING_EXPIRED",
@@ -39,7 +40,7 @@ RULE_TO_CATEGORY = {
     "CARD_VISIT_LIMIT_EXCEEDED":      "DUPLICATE_ACCESS",
 
     "CARD_HOLDER_NAME_MISMATCH":    "CARD_HOLDER_NAME_MISMATCH",
-    "GUEST_NAME_MISMATCH":                   "GUEST_NAME_MISMATCH",
+    "GUEST_NAME_MISMATCH":          "GUEST_NAME_MISMATCH",
 }
 
 
@@ -55,7 +56,7 @@ def _collect_categories(findings: list) -> list:
 def run_rules(transaction) -> tuple[list, list, bool]:
     """
     Runs all rules and returns:
-      - findings               : all failed + inconclusive findings, each with a 'confidence' field
+      - findings               : all failed + inconclusive findings
       - failure_categories     : unique categories derived from all returned findings
       - requires_manual_review : True only when inconclusive findings exist and no failed findings
     """

@@ -228,7 +228,9 @@ class TestCardExpiry:
             expiry_date      = "1228",
             card_holder_name = "Alice Johnson",
         ))
-        assert check_card_expiry(txn)["result"] == "failed"
+        r = check_card_expiry(txn)
+        assert r["result"] == "failed"
+        assert r["rule_id"] == "CARD_EXPIRY_FORMAT_INVALID"
 
 
 # ---------------------------------------------------------------------------
@@ -424,19 +426,19 @@ class TestAnalyseTransaction:
         result = analyse_transaction(txn)
         assert result["status"] == "failed"
         assert result["confidence"] == "high"
-        assert result["failure_category"] == "BOOKING_REFERENCE_MISMATCH"
+        assert "BOOKING_REFERENCE_MISMATCH" in result["failure_categories"]
 
     def test_expired_booking_returns_failed(self):
         txn = _booking(booking_reference="BKREF-EXPIRED-001")
         result = analyse_transaction(txn)
         assert result["status"] == "failed"
-        assert result["failure_category"] == "BOOKING_EXPIRED"
+        assert "BOOKING_EXPIRED" in result["failure_categories"]
 
     def test_access_window_violation_returns_failed(self):
         txn = _booking(boarding_pass=_bp(hours=5))
         result = analyse_transaction(txn)
         assert result["status"] == "failed"
-        assert result["failure_category"] == "ACCESS_WINDOW_VIOLATION"
+        assert "ACCESS_WINDOW_VIOLATION" in result["failure_categories"]
 
     def test_card_not_eligible_for_lounge_returns_failed(self):
         txn = _card(
@@ -450,13 +452,13 @@ class TestAnalyseTransaction:
         )
         result = analyse_transaction(txn)
         assert result["status"] == "failed"
-        assert result["failure_category"] == "ENTITLEMENT_NOT_VALID"
+        assert "ENTITLEMENT_NOT_VALID" in result["failure_categories"]
 
     def test_airline_status_invalid_returns_failed(self):
         txn = _airline(airline_status_id="FF-000000000")
         result = analyse_transaction(txn)
         assert result["status"] == "failed"
-        assert result["failure_category"] == "ENTITLEMENT_NOT_VALID"
+        assert "ENTITLEMENT_NOT_VALID" in result["failure_categories"]
 
     def test_short_circuit_stops_at_first_failure(self):
         """Rule engine returns only the first failing rule, even if later rules also fail."""
@@ -503,7 +505,7 @@ class TestAnalyseTransaction:
         txn = _booking(booking_reference="WRONG-REF")
         result = analyse_transaction(txn)
         required = {
-            "transaction_id", "status", "failure_category", "confidence",
+            "transaction_id", "status", "failure_categories", "confidence",
             "deterministic_findings", "masked_guest_data", "staff_guidance",
             "guest_explanation", "requires_manual_review", "fallback_used",
         }

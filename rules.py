@@ -142,7 +142,7 @@ def check_card_expiry(transaction) -> dict:
 
         if len(parts) != 2 or not all(p.isdigit() for p in parts):
             return {
-                "rule_id": "CARD_EXPIRED",
+                "rule_id": "CARD_EXPIRY_FORMAT_INVALID",
                 "result":  "failed",
                 "details": "Card expiry date is not in a valid MM/YY format.",
             }
@@ -152,7 +152,7 @@ def check_card_expiry(transaction) -> dict:
 
         if month < 1 or month > 12:
             return {
-                "rule_id": "CARD_EXPIRED",
+                "rule_id": "CARD_EXPIRY_FORMAT_INVALID",
                 "result":  "failed",
                 "details": "Card expiry month is invalid. Month must be between 01 and 12.",
             }

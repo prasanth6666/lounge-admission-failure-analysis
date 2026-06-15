@@ -40,7 +40,7 @@ def analyse_transaction(transaction: AdmissionTransaction) -> dict:
     return {
         "transaction_id":         transaction.transaction_id,
         "status":                 status,
-        "failure_category":       failure_categories[0] if failure_categories else None,
+        "failure_categories":     failure_categories,
         "confidence":             confidence,
         "deterministic_findings": findings,
         "masked_guest_data":      masked_guest_data,
